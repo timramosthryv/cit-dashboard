@@ -1015,7 +1015,12 @@ html += '<td style="text-align:center; font-weight:600">' + t + '</td>';
 html += '<td style="text-align:center">' + missing + '</td>';
 html += '<td style="text-align:center">' + info + '</td>';
 html += '<td style="text-align:center; font-weight:700; color:' + missPctColor + '">' + (t > 0 ? missPct + '%' : '&mdash;') + '</td>';
-html += '<td style="text-align:center">' + cerRateCell(t, cerTotal([s.team], selectedMonths())) + '</td>';
+// Restrict both sides of the rate to months that have a CER figure on file,
+// so a YTD request count is never divided by a partial-year denominator.
+const cerMonths = selectedMonths().filter(m => (CER_COUNTS[s.team] || {})[m] != null);
+const cerDen = cerTotal([s.team], cerMonths);
+const cerNum = rows.filter(r => cerMonths.indexOf(r.date.getMonth()) !== -1).length;
+html += '<td style="text-align:center">' + cerRateCell(cerNum, cerDen) + '</td>';
 html += '<td style="text-align:center">' + share + '%</td>';
 html += '<td style="text-align:center">' + coachCount + '</td>';
 html += '</tr>';
