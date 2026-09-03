@@ -412,6 +412,51 @@ function teamSlug(team) {
 return String(team || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+// Assigned CER counts used as the denominator for CIT Rate vs CERs.
+// Keyed by team, then month index (0 = January). Values are the assigned
+// CER account totals as reported to leadership for that month. Months with
+// no value show a dash rather than a guessed rate.
+const CER_COUNTS = {
+'CSM':   { 6: 663, 7: 687 },
+'PCSM':  { 7: 75 },
+'AU/NZ': { 7: 36 }
+};
+
+function selectedTeams() {
+const v = document.getElementById('filter-team').value;
+return v === 'all' ? SOURCES.map(s => s.team) : [v];
+}
+
+function selectedMonths() {
+const v = document.getElementById('filter-month').value;
+if (v !== 'all') return [Number(v)];
+const out = [];
+for (let i = 0; i < 12; i++) out.push(i);
+return out;
+}
+
+// Sum of known CER counts for the given teams and months.
+// Returns null when no figure is on file, so the UI can show a dash.
+function cerTotal(teams, months) {
+let sum = 0, have = false;
+teams.forEach(t => {
+const byMonth = CER_COUNTS[t];
+if (!byMonth) return;
+months.forEach(m => {
+if (byMonth[m] != null) { sum += byMonth[m]; have = true; }
+});
+});
+return have ? sum : null;
+}
+
+// requests / assigned CERs, formatted. Dash when the denominator is unknown.
+function cerRateCell(requests, den) {
+if (den == null || den === 0) return '<span style="color:var(--gray-300)">&mdash;</span>';
+const pct = requests / den * 100;
+return '<span style="font-weight:700">' + pct.toFixed(1) + '%</span>' +
+'<span style="color:var(--gray-400); font-weight:500"> (' + requests + '/' + den + ')</span>';
+}
+
 // ── Data fetching via JSONP ──
 function fetchGviz(url) {
   return new Promise((resolve, reject) => {
@@ -951,7 +996,7 @@ datasets: [{ data: teamData, backgroundColor: teamBg, borderWidth: 0 }]
 // ── MoM Performance Table ──
 // Team Summary Table
 function renderTeamTable(data) {
-let html = '<table><thead><tr><th>Team</th><th style="text-align:center">Total</th><th style="text-align:center">Missing CIT</th><th style="text-align:center">More Info</th><th style="text-align:center">Missing CIT %</th><th style="text-align:center">Share of Volume</th><th style="text-align:center">Coaches</th></tr></thead><tbody>';
+let html = '<table><thead><tr><th>Team</th><th style="text-align:center">Total</th><th style="text-align:center">Missing CIT</th><th style="text-align:center">More Info</th><th style="text-align:center">Missing CIT %</th><th style="text-align:center">CIT Rate vs CERs</th><th style="text-align:center">Share of Volume</th><th style="text-align:center">Coaches</th></tr></thead><tbody>';
 const grandTotal = data.length;
 SOURCES.forEach(s => {
 const rows = data.filter(r => r.team === s.team);
@@ -970,6 +1015,7 @@ html += '<td style="text-align:center; font-weight:600">' + t + '</td>';
 html += '<td style="text-align:center">' + missing + '</td>';
 html += '<td style="text-align:center">' + info + '</td>';
 html += '<td style="text-align:center; font-weight:700; color:' + missPctColor + '">' + (t > 0 ? missPct + '%' : '&mdash;') + '</td>';
+html += '<td style="text-align:center">' + cerRateCell(t, cerTotal([s.team], selectedMonths())) + '</td>';
 html += '<td style="text-align:center">' + share + '%</td>';
 html += '<td style="text-align:center">' + coachCount + '</td>';
 html += '</tr>';
@@ -980,7 +1026,7 @@ document.getElementById('team-table-wrap').innerHTML = html;
 
 function renderMoMTable(data) {
   const maxMonth = data.length > 0 ? Math.max(...data.map(r => r.date.getMonth())) : 0;
-  let html = '<table><thead><tr><th>Month</th><th style="text-align:center">Total</th><th style="text-align:center">Missing CIT</th><th style="text-align:center">More Info</th><th style="text-align:center">Missing CIT %</th><th style="text-align:center">MoM Change</th><th style="text-align:center">Trend</th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th>Month</th><th style="text-align:center">Total</th><th style="text-align:center">Missing CIT</th><th style="text-align:center">More Info</th><th style="text-align:center">Missing CIT %</th><th style="text-align:center">CIT Rate vs CERs</th><th style="text-align:center">MoM Change</th><th style="text-align:center">Trend</th></tr></thead><tbody>';
 
   let prevTotal = null;
   for (let i = 0; i <= maxMonth; i++) {
@@ -1015,6 +1061,7 @@ function renderMoMTable(data) {
     html += '<td style="text-align:center">' + missing + '</td>';
     html += '<td style="text-align:center">' + info + '</td>';
     html += '<td style="text-align:center; font-weight:700; color:' + missPctColor + '">' + missPct + '%</td>';
+html += '<td style="text-align:center">' + cerRateCell(t, cerTotal(selectedTeams(), [i])) + '</td>';
     html += '<td style="text-align:center">' + changeHtml + '</td>';
     html += '<td style="text-align:center">' + trendHtml + '</td>';
     html += '</tr>';
