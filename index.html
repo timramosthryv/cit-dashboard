@@ -357,7 +357,7 @@ tr:hover td { background:var(--gray-50); }
     <!-- Team Summary -->
 <div class="card full-width">
 <div class="chart-card">
-<div class="chart-card-title">Team Summary</div>
+<div class="chart-card-title">Team Summary <span class="chart-card-note" id="cer-asof"></span></div>
 <div class="table-wrap" id="team-table-wrap"></div>
 </div>
 </div>
@@ -412,14 +412,22 @@ function teamSlug(team) {
 return String(team || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+const CER_UPDATED = 'Sep 3, 2026';
+
 // Assigned CER counts used as the denominator for CIT Rate vs CERs.
-// Keyed by team, then month index (0 = January). Values are the assigned
-// CER account totals as reported to leadership for that month. Months with
-// no value show a dash rather than a guessed rate.
+// Source: Onboarding_Form__c, counted by month of CreatedDate, matching the
+// Salesforce reports CERs Assigned All 2026 and PCSM CERs Assigned All 2026
+// with these rules:
+//   Status excludes Cancelled, Cancelled - Duplicate, Cancelled - No Appointment Needed
+//   No Thryv Package filter, so Signature CERs are included
+//   CSM   = coach matches mia, white, reece, boyd, baldwin, laney, morelli, stalnaker
+//   PCSM  = coach matches cowden, carla, tardy, shannon, esfeld
+//   AU/NZ = coach matches taylor (CSM side) or stephen (PCSM side)
+// Keyed by team, then month index (0 = January).
 const CER_COUNTS = {
-'CSM':   { 6: 663, 7: 687 },
-'PCSM':  { 7: 75 },
-'AU/NZ': { 7: 36 }
+'CSM':   { 0: 282, 1: 332, 2: 401, 3: 422, 4: 348, 5: 342, 6: 567, 7: 492, 8: 61 },
+'PCSM':  { 0: 224, 1: 239, 2: 203, 3: 166, 4: 179, 5: 170, 6: 208, 7: 157, 8: 20 },
+'AU/NZ': { 0: 131, 1: 179, 2: 199, 3: 207, 4: 214, 5: 240, 6: 270, 7: 295, 8: 40 }
 };
 
 function selectedTeams() {
@@ -1027,6 +1035,8 @@ html += '</tr>';
 });
 html += '</tbody></table>';
 document.getElementById('team-table-wrap').innerHTML = html;
+const asOf = document.getElementById('cer-asof');
+if (asOf) asOf.textContent = 'CER counts as of ' + CER_UPDATED;
 }
 
 function renderMoMTable(data) {
