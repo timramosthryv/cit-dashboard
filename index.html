@@ -155,6 +155,11 @@ color:var(--gray-500); margin:0 0 10px 2px;
 .kpi-group-inner { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .kpi-group .card-body { padding:16px; }
 
+.table-footnote {
+font-size:11px; color:var(--gray-500); line-height:1.6; margin-top:14px;
+padding-top:12px; border-top:1px solid var(--gray-100);
+}
+
 /* Chart card */
 .chart-card { padding:20px; }
 .chart-card-title {
@@ -396,6 +401,7 @@ tr:hover td { background:var(--gray-50); }
       <div class="chart-card">
         <div class="chart-card-title">Month-over-Month Performance <span class="chart-card-note">CIT Rate vs CERs: Jan&ndash;Aug as reported to leadership, Sep onward live from Salesforce</span></div>
         <div class="table-wrap" id="mom-table-wrap"></div>
+<div class="table-footnote"><b>How the CER denominator is set.</b> Assigned CER totals keep shifting in Salesforce after a month closes, so each month is locked once it ends. Whatever the CERs created figure reads at month end is the number the dashboard keeps for that month from then on. January through August hold the totals reported to leadership. The current month refreshes each weekday morning and stays provisional until it closes.</div>
       </div>
     </div>
 
@@ -448,6 +454,12 @@ const CER_UPDATED = 'Sep 3, 2026';
 // reported to leadership, so the dashboard reproduces those readouts exactly.
 const CER_LIVE_FROM = 8;
 
+// LOCKING POLICY: a month is locked once it ends. Assigned CER totals continue
+// to move in Salesforce after a month closes, so the value captured at month end
+// is the value this dashboard keeps for that month permanently. The daily refresh
+// only ever writes the current calendar month, plus one final close-out capture of
+// the prior month during the first days of a new month. Nothing older is touched.
+//
 // Assigned CER counts used as the denominator for CIT Rate vs CERs.
 //
 // January through August are the Total Assigned CER Accounts (US/DR) figures
