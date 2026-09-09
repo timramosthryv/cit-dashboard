@@ -19,7 +19,9 @@
   --purple: #7c3aed;
   --purple-light: #f5f3ff;
   --cyan: #0891b2;
-  --cyan-light: #ecfeff;
+--teal: #0f766e;
+--teal-light: #ccfbf1;
+--amber-light: #fffbeb;
   --red: #dc2626;
   --gray-50: #f9fafb;
   --gray-100: #f3f4f6;
@@ -57,6 +59,11 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
   background:#fef2f2; border-bottom:2px solid var(--red); padding:14px 24px;
   color:var(--red); font-size:14px; font-weight:500; text-align:center;
 }
+#warn-banner {
+display:none; position:fixed; top:0; left:0; right:0; z-index:9997;
+background:var(--amber-light); border-bottom:2px solid var(--amber); padding:12px 24px;
+color:#92400e; font-size:13px; font-weight:500; text-align:center;
+}
 
 /* Sidebar */
 .sidebar {
@@ -68,7 +75,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
   padding:24px 20px 16px; border-bottom:1px solid var(--gray-100);
   display:flex; align-items:center; gap:12px;
 }
-.sidebar-logo span { font-size:22px; font-weight:700; color:var(--orange); letter-spacing:-0.5px; }
+.sidebar-logo img { width:152px; height:auto; display:block; }
 .sidebar-section { padding:16px 20px 8px; }
 .sidebar-section-title {
   font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px;
@@ -82,6 +89,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
   cursor:pointer; transition:border-color 0.15s;
 }
 .filter-group select:focus { outline:none; border-color:var(--orange); box-shadow:0 0 0 3px rgba(255,102,0,0.1); }
+.filter-hint { font-size:11px; color:var(--gray-400); margin-top:4px; font-weight:500; }
 .filter-reset {
   display:block; width:100%; padding:8px; margin-top:4px; border:1px solid var(--gray-200);
   border-radius:8px; background:white; font-size:12px; font-weight:600;
@@ -106,9 +114,9 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 
 /* Content area */
 .content { padding:24px 32px 48px; }
-.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+.grid-4 { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:24px; }
 .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
-.grid-2-sm { display:grid; grid-template-columns:280px 280px 280px; gap:16px; margin-bottom:24px; }
+.grid-2-sm { display:grid; grid-template-columns:280px 280px; gap:16px; margin-bottom:24px; }
 .full-width { margin-bottom:24px; }
 
 /* Cards */
@@ -135,12 +143,30 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
   justify-content:center; font-size:18px; margin-bottom:12px;
 }
 
+/* Labelled group holding the two request-type cards */
+.kpi-group {
+grid-column:span 2; border:1px solid var(--gray-200); border-radius:var(--radius);
+background:var(--gray-50); padding:12px 12px 14px;
+}
+.kpi-group-title {
+font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+color:var(--gray-500); margin:0 0 10px 2px;
+}
+.kpi-group-inner { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.kpi-group .card-body { padding:16px; }
+
+.table-footnote {
+font-size:11px; color:var(--gray-500); line-height:1.6; margin-top:14px;
+padding-top:12px; border-top:1px solid var(--gray-100);
+}
+
 /* Chart card */
 .chart-card { padding:20px; }
 .chart-card-title {
   font-size:14px; font-weight:700; color:var(--gray-800); margin-bottom:16px;
   display:flex; align-items:center; justify-content:space-between;
 }
+.chart-card-note { font-size:11px; font-weight:600; color:var(--gray-400); letter-spacing:0; }
 
 /* Tables */
 .table-wrap { overflow-x:auto; }
@@ -157,8 +183,7 @@ tr:hover td { background:var(--gray-50); }
 }
 .badge-csm { background:var(--blue-light); color:var(--blue); }
 .badge-pcsm { background:var(--orange-light); color:var(--orange); }
-.badge-us { background:var(--gray-100); color:var(--gray-600); }
-.badge-anz { background:var(--cyan-light); color:var(--cyan); }
+.badge-aunz { background:var(--teal-light); color:var(--teal); }
 .trend-up { color:var(--red); font-weight:600; }
 .trend-down { color:var(--green); font-weight:600; }
 .trend-flat { color:var(--gray-400); font-weight:600; }
@@ -181,16 +206,17 @@ tr:hover td { background:var(--gray-50); }
 .tab-btn:hover:not(.active) { background:var(--gray-50); border-color:var(--gray-300); }
 
 /* Responsive */
+@media (max-width:1500px) {
+.grid-4 { grid-template-columns:repeat(3,1fr); }
+}
 @media (max-width:1200px) {
   .grid-4 { grid-template-columns:repeat(2,1fr); }
-  .grid-2-sm { grid-template-columns:repeat(2,280px); }
 }
 @media (max-width:900px) {
   .sidebar { display:none; }
   .main { margin-left:0; }
   .grid-2 { grid-template-columns:1fr; }
   .grid-4 { grid-template-columns:repeat(2,1fr); }
-  .grid-2-sm { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -202,29 +228,27 @@ tr:hover td { background:var(--gray-50); }
   <div class="loading-sub">Fetching live data from Google Sheets</div>
 </div>
 <div id="error-banner"></div>
+<div id="warn-banner"></div>
 
 <!-- Sidebar -->
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <span>Thryv</span>
-  </div>
+<img src="data:image/png;base64,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" width="320" height="129" alt="Thryv">
+</div>
   <div class="sidebar-section">
     <div class="sidebar-section-title">Filters</div>
     <div class="filter-group">
-      <label>Region</label>
-      <select id="filter-region"><option value="all">All Regions</option><option value="US">US</option><option value="AU/NZ">AU/NZ</option></select>
-    </div>
-    <div class="filter-group">
       <label>Team</label>
-      <select id="filter-team"><option value="all">All Teams</option><option value="CSM">CSM</option><option value="PCSM">PCSM</option></select>
+      <select id="filter-team"><option value="all">All Teams</option></select>
     </div>
     <div class="filter-group">
       <label>Month</label>
       <select id="filter-month"><option value="all">All Months</option></select>
     </div>
     <div class="filter-group">
-      <label>RVP / Senior Manager</label>
+      <label>RVP</label>
       <select id="filter-rvp"><option value="all">All RVPs</option></select>
+<div class="filter-hint">CSM and PCSM only</div>
     </div>
     <div class="filter-group">
       <label>Coach</label>
@@ -242,7 +266,7 @@ tr:hover td { background:var(--gray-50); }
   </div>
   <div style="flex:1;"></div>
   <div style="padding:16px 20px; border-top:1px solid var(--gray-100); font-size:11px; color:var(--gray-400); font-weight:500;">
-    CIT Request Dashboard v2.1<br>US + AU/NZ · Data refreshes on page load
+    CIT Request Dashboard v2.1<br>CSM &middot; PCSM &middot; AU/NZ<br>Data refreshes on page load
   </div>
 </nav>
 
@@ -259,22 +283,33 @@ tr:hover td { background:var(--gray-50); }
   <div class="content">
     <!-- KPI Cards -->
     <div class="grid-4" id="kpi-row">
-      <div class="card">
-        <div class="card-body">
-          <div class="kpi-icon" style="background:var(--orange-light); color:var(--orange);">&#128200;</div>
-          <div class="card-title">Total YTD Requests</div>
-          <div class="kpi-value" id="kpi-total">&mdash;</div>
-          <div class="kpi-sub" id="kpi-total-sub"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <div class="kpi-icon" style="background:var(--blue-light); color:var(--blue);">&#128197;</div>
-          <div class="card-title">Current Month Submissions</div>
-          <div class="kpi-value" id="kpi-month">&mdash;</div>
-          <div class="kpi-change neutral" id="kpi-month-change"></div>
-        </div>
-      </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="kpi-icon" style="background:var(--orange-light); color:var(--orange);">&#128200;</div>
+      <div class="card-title">Total YTD Requests</div>
+      <div class="kpi-value" id="kpi-total">&mdash;</div>
+      <div class="kpi-sub" id="kpi-total-sub"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="kpi-icon" style="background:var(--blue-light); color:var(--blue);">&#128197;</div>
+      <div class="card-title">Current Month Submissions</div>
+      <div class="kpi-value" id="kpi-month">&mdash;</div>
+      <div class="kpi-change neutral" id="kpi-month-change"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="kpi-icon" style="background:var(--green-light); color:var(--green);">&#127919;</div>
+      <div class="card-title">Missing CITs vs CERs Created</div>
+      <div class="kpi-value" id="kpi-cer">&mdash;</div>
+      <div class="kpi-sub" id="kpi-cer-sub"></div>
+    </div>
+  </div>
+  <div class="kpi-group">
+    <div class="kpi-group-title">CIT Request Types</div>
+    <div class="kpi-group-inner">
       <div class="card">
         <div class="card-body">
           <div class="kpi-icon" style="background:#fef2f2; color:var(--red);">&#9888;</div>
@@ -292,6 +327,9 @@ tr:hover td { background:var(--gray-50); }
         </div>
       </div>
     </div>
+  </div>
+</div>
+
 
     <!-- Monthly Trend -->
     <div class="card full-width">
@@ -305,7 +343,7 @@ tr:hover td { background:var(--gray-50); }
     <div class="grid-2">
       <div class="card">
         <div class="chart-card">
-          <div class="chart-card-title">By RVP / Senior Manager</div>
+          <div class="chart-card-title">By RVP Region <span class="chart-card-note">CSM + PCSM only</span></div>
           <div style="position:relative;" id="rvp-chart-wrap"><canvas id="chart-rvp"></canvas></div>
         </div>
       </div>
@@ -348,19 +386,22 @@ tr:hover td { background:var(--gray-50); }
           <div style="height:240px; position:relative;"><canvas id="chart-type-donut"></canvas></div>
         </div>
       </div>
-      <div class="card">
-        <div class="chart-card">
-          <div class="chart-card-title">Region Split</div>
-          <div style="height:240px; position:relative;"><canvas id="chart-region-donut"></canvas></div>
-        </div>
-      </div>
     </div>
 
-    <!-- MoM Performance Table -->
+    <!-- Team Summary -->
+<div class="card full-width">
+<div class="chart-card">
+<div class="chart-card-title">Team Summary <span class="chart-card-note" id="cer-asof"></span></div>
+<div class="table-wrap" id="team-table-wrap"></div>
+</div>
+</div>
+
+<!-- MoM Performance Table -->
     <div class="card full-width">
       <div class="chart-card">
-        <div class="chart-card-title">Month-over-Month Performance</div>
+        <div class="chart-card-title">Month-over-Month Performance <span class="chart-card-note">CIT Rate vs CERs: Jan&ndash;Aug as reported to leadership, Sep onward live from Salesforce</span></div>
         <div class="table-wrap" id="mom-table-wrap"></div>
+<div class="table-footnote"><b>How the CER denominator is set.</b> Assigned CER totals keep shifting in Salesforce after a month closes, so each month is locked once it ends. Whatever the CERs created figure reads at month end is the number the dashboard keeps for that month from then on. January through August hold the totals reported to leadership. The current month refreshes each weekday morning and stays provisional until it closes.</div>
       </div>
     </div>
 
@@ -378,25 +419,120 @@ tr:hover td { background:var(--gray-50); }
 // ── Global state ──
 let ALL_DATA = [];
 let CHARTS = {};
-const REPORT_YEAR = 2026;
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const COLORS = {
   orange: '#ff6600', blue: '#2563eb', green: '#16a34a', purple: '#7c3aed',
   cyan: '#0891b2', red: '#dc2626', amber: '#f59e0b', pink: '#ec4899',
-  indigo: '#4f46e5', teal: '#14b8a6', slate: '#64748b'
+  indigo: '#4f46e5', teal: '#0f766e'
 };
 
-// ── Data sources ──
-// Each source is one Google Sheet tab fed by a Jotform. Columns are matched by
-// header text, not position, so sheets with different field sets still load.
+// Data sources: one entry per Jotform to Google Sheets feed.
+// To add a team later, add a row here.
+//   sheetId — Google Sheet ID from the Jotform Google Sheets integration
+//   hasRvp  — true when the source form captures RVP (columns R and S)
 const SOURCES = [
-  { name: 'CSM (US)',           id: '1dYl_YvWHPyJRSPu9952vZaGSIJvayuDWKUVQfSxP5e4', team: 'CSM',  region: 'US' },
-  { name: 'PCSM (US)',          id: '1cK4WLKPbqBppkh6PKv49KTGG51K3nxv5WSdZLRXs-mc', team: 'PCSM', region: 'US' },
-  { name: 'AU/NZ CSM (live)',   id: '1E1KxCd9inB7Me9j_94RCe2i-kriS_LHzHcVz8Z9AxlI', team: 'CSM',  region: 'AU/NZ' },
-  // Retired "ANZ - Request for CIT Form". Historical submissions only, no new rows.
-  { name: 'AU/NZ CSM (legacy)', id: '1E1KxCd9inB7Me9j_94RCe2i-kriS_LHzHcVz8Z9AxlI', team: 'CSM',  region: 'AU/NZ', sheet: 'ANZ Legacy' }
+{ team: 'CSM', label: 'CSM', sheetId: '1dYl_YvWHPyJRSPu9952vZaGSIJvayuDWKUVQfSxP5e4', hasRvp: true, color: COLORS.blue },
+{ team: 'PCSM', label: 'PCSM', sheetId: '1cK4WLKPbqBppkh6PKv49KTGG51K3nxv5WSdZLRXs-mc', hasRvp: true, color: COLORS.orange },
+// AU/NZ CSM Request for CIT Form — Jotform 262325408075859.
+// Columns A through Q match the CSM and PCSM sheets. This form does not
+// capture RVP, so AU/NZ rows are excluded from the RVP chart and filter.
+{ team: 'AU/NZ', label: 'AU/NZ', sheetId: '1E1KxCd9inB7Me9j_94RCe2i-kriS_LHzHcVz8Z9AxlI', hasRvp: false, color: COLORS.teal }
 ];
+
+const RVP_TEAMS = new Set(SOURCES.filter(s => s.hasRvp).map(s => s.team));
+
+// CSS-safe class suffix for team badges (AU/NZ becomes "aunz")
+function teamSlug(team) {
+return String(team || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+const CER_UPDATED = 'Sep 3, 2026';
+
+// First month index sourced live from Salesforce rather than from a sent readout.
+// 8 = September 2026. Months before this are frozen at the figures already
+// reported to leadership, so the dashboard reproduces those readouts exactly.
+const CER_LIVE_FROM = 8;
+
+// LOCKING POLICY: a month is locked once it ends. Assigned CER totals continue
+// to move in Salesforce after a month closes, so the value captured at month end
+// is the value this dashboard keeps for that month permanently. The daily refresh
+// only ever writes the current calendar month, plus one final close-out capture of
+// the prior month during the first days of a new month. Nothing older is touched.
+//
+// Assigned CER counts used as the denominator for CIT Rate vs CERs.
+//
+// January through August are the Total Assigned CER Accounts (US/DR) figures
+// from the monthly Missing CIT readouts sent to Kasey Steele. They are held
+// fixed so the dashboard ties to what leadership already has. Blanks are
+// months where a readout stated no denominator, and those show a dash.
+//
+// September onward is pulled from Onboarding_Form__c by month of CreatedDate,
+// excluding the three Cancelled statuses, with no Thryv Package filter, and
+// with Taylor and Stephen routed to AU/NZ. Note this basis is narrower than
+// the reported months, which included Taylor's book inside CSM.
+//
+// Keyed by team, then month index (0 = January).
+const CER_COUNTS = {
+'CSM':   { 0: 465, 1: 560, 2: 617, 3: 623, 4: 522, 5: 464, 6: 663, 7: 687, 8: 61 },
+'PCSM':  { 1: 273, 2: 234, 4: 173, 5: 129, 6: 189, 7: 75, 8: 20 },
+'AU/NZ': { 7: 36, 8: 40 }
+};
+
+function selectedTeams() {
+const v = document.getElementById('filter-team').value;
+return v === 'all' ? SOURCES.map(s => s.team) : [v];
+}
+
+function selectedMonths() {
+const v = document.getElementById('filter-month').value;
+if (v !== 'all') return [Number(v)];
+const out = [];
+for (let i = 0; i < 12; i++) out.push(i);
+return out;
+}
+
+// Sum of known CER counts for the given teams and months.
+// Returns null when no figure is on file, so the UI can show a dash.
+function cerTotal(teams, months) {
+let sum = 0, have = false;
+teams.forEach(t => {
+const byMonth = CER_COUNTS[t];
+if (!byMonth) return;
+months.forEach(m => {
+if (byMonth[m] != null) { sum += byMonth[m]; have = true; }
+});
+});
+return have ? sum : null;
+}
+
+// requests / assigned CERs, formatted. Dash when the denominator is unknown.
+function cerRateCell(requests, den) {
+if (den == null || den === 0) return '<span style="color:var(--gray-300)">&mdash;</span>';
+const pct = requests / den * 100;
+return '<span style="font-weight:700">' + pct.toFixed(1) + '%</span>' +
+'<span style="color:var(--gray-400); font-weight:500"> (' + requests + '/' + den + ')</span>';
+}
+
+// Rate across the current selection, pairing every team-month with its own CER
+// figure and skipping team-months that have none. This keeps the numerator and
+// denominator over the same span, so a YTD request count is never divided by a
+// partial-year denominator.
+function cerScopedRate(data) {
+const teams = selectedTeams();
+const months = selectedMonths();
+let num = 0, den = 0, have = false;
+teams.forEach(t => {
+const byMonth = CER_COUNTS[t] || {};
+months.forEach(m => {
+if (byMonth[m] == null) return;
+den += byMonth[m];
+num += data.filter(r => r.team === t && r.date.getMonth() === m).length;
+have = true;
+});
+});
+return have ? { num: num, den: den } : null;
+}
 
 // ── Data fetching via JSONP ──
 function fetchGviz(url) {
@@ -418,136 +554,130 @@ function fetchGviz(url) {
   });
 }
 
-function sourceUrl(src) {
-  let url = 'https://docs.google.com/spreadsheets/d/' + src.id + '/gviz/tq?tq=' +
-            encodeURIComponent('SELECT * WHERE YEAR(A)=' + REPORT_YEAR);
-  if (src.sheet) url += '&sheet=' + encodeURIComponent(src.sheet);
-  return url;
+// Year filtering happens client side in parseGvizRows. A server-side
+// "WHERE YEAR(A)=2026" fails on a sheet with no rows yet, because Google
+// cannot type an empty column as a date.
+function sheetUrl(sheetId) {
+return 'https://docs.google.com/spreadsheets/d/' + sheetId + '/gviz/tq?tq=' + encodeURIComponent('SELECT *');
 }
 
-// ── Header-based column mapping ──
-// The US forms carry RVP. The AU/NZ forms use Senior/Country Manager, and the
-// retired ANZ form used Sales Manager/Leader in place of Sales Director.
-function buildColumnMap(cols) {
-  const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const labels = (cols || []).map(c => norm(c.label));
-  const find = (...tests) => {
-    for (const test of tests) {
-      const i = labels.findIndex(test);
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const seniorLeader = x => x.includes('salesdirector') || x.includes('salesmanager') || x.includes('salesleader');
-  return {
-    date:            find(x => x.includes('submissiondate')),
-    type:            find(x => x.includes('typeofrequest')),
-    coachName:       find(x => x === 'coachname', x => x === 'coach', x => x.includes('coachname')),
-    coachEmail:      find(x => x.includes('coachemail')),
-    accountName:     find(x => x.includes('accountname')),
-    kgenId:          find(x => x.includes('kgen')),
-    preExistingCit:  find(x => x.includes('preexisting')),
-    dateSold:        find(x => x.includes('datesold')),
-    callDateTime:    find(x => x.includes('datetimeofcall')),
-    csmFirst:        find(x => x.includes('successmanager') && x.includes('first')),
-    csmLast:         find(x => x.includes('successmanager') && x.includes('last')),
-    baFirst:         find(x => x.includes('businessadvisor') && x.includes('first')),
-    baLast:          find(x => x.includes('businessadvisor') && x.includes('last')),
-    baEmail:         find(x => x.includes('businessadvisor') && x.includes('email')),
-    sdFirst:         find(x => seniorLeader(x) && x.includes('first')),
-    sdLast:          find(x => seniorLeader(x) && x.includes('last')),
-    sdEmail:         find(x => seniorLeader(x) && x.includes('email')),
-    rvp:             find(x => x === 'rvp', x => x.includes('seniorcountrymanager') && !x.includes('email'), x => x.includes('countrymanager') && !x.includes('email')),
-    rvpEmail:        find(x => x === 'rvpemail', x => x.includes('seniorcountrymanager') && x.includes('email'), x => x.includes('countrymanager') && x.includes('email'))
-  };
+// gviz returns HTTP 200 with a status of "error" for bad queries or sheets
+// that are not shared. Surface those as real failures.
+function gvizError(resp) {
+if (!resp) return 'Empty response';
+if (resp.status === 'error') {
+const e = (resp.errors && resp.errors[0]) || {};
+return e.detailed_message || e.message || e.reason || 'Query error';
+}
+return null;
 }
 
-function toDate(raw) {
-  if (raw == null || raw === '') return null;
-  if (raw instanceof Date) return raw;
-  if (typeof raw === 'string' && raw.startsWith('Date(')) {
-    const p = raw.replace('Date(', '').replace(')', '').split(',').map(Number);
-    return new Date(p[0], p[1], p[2], p[3] || 0, p[4] || 0, p[5] || 0);
-  }
-  const d = new Date(raw);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-function parseGvizRows(resp, src) {
+function parseGvizRows(resp, source) {
   if (!resp || !resp.table || !resp.table.rows) return [];
-  const map = buildColumnMap(resp.table.cols);
-  return resp.table.rows.map(r => {
+  const rows = resp.table.rows;
+  return rows.map(r => {
     const cells = r.c || [];
     const val = (i) => {
-      if (i == null || i < 0 || !cells[i]) return '';
+      if (!cells[i]) return '';
       const v = cells[i].v;
       return v != null ? v : '';
     };
-    const str = (i) => String(val(i) || '').trim();
+    // Parse date from column A — gviz returns "Date(YYYY,M,D,H,m,s)"
+    let submDate = null;
+    const av = val(0);
+    if (av && typeof av === 'string' && av.startsWith('Date(')) {
+      const parts = av.replace('Date(','').replace(')','').split(',').map(Number);
+      submDate = new Date(parts[0], parts[1], parts[2], parts[3]||0, parts[4]||0, parts[5]||0);
+    } else if (av instanceof Date) {
+      submDate = av;
+    } else if (typeof av === 'string' && av.length > 0) {
+      submDate = new Date(av);
+    }
     return {
-      date: toDate(val(map.date)),
-      type: str(map.type),
-      coachName: str(map.coachName),
-      coachEmail: str(map.coachEmail),
-      accountName: str(map.accountName),
-      kgenId: str(map.kgenId),
-      preExistingCit: str(map.preExistingCit),
-      dateSold: val(map.dateSold) || '',
-      callDateTime: val(map.callDateTime) || '',
-      csmFirst: str(map.csmFirst),
-      csmLast: str(map.csmLast),
-      baFirst: str(map.baFirst),
-      baLast: str(map.baLast),
-      baEmail: str(map.baEmail),
-      sdFirst: str(map.sdFirst),
-      sdLast: str(map.sdLast),
-      sdEmail: str(map.sdEmail),
-      rvp: str(map.rvp),
-      rvpEmail: str(map.rvpEmail),
-      team: src.team,
-      region: src.region,
-      source: src.name
+      date: submDate,
+      type: String(val(1) || '').trim(),
+      coachName: String(val(2) || '').trim(),
+      coachEmail: String(val(3) || '').trim(),
+      accountName: String(val(4) || '').trim(),
+      kgenId: String(val(5) || ''),
+      preExistingCit: String(val(6) || ''),
+      dateSold: val(7) || '',
+      callDateTime: val(8) || '',
+      csmFirst: String(val(9) || '').trim(),
+      csmLast: String(val(10) || '').trim(),
+      baFirst: String(val(11) || '').trim(),
+      baLast: String(val(12) || '').trim(),
+      baEmail: String(val(13) || '').trim(),
+      sdFirst: String(val(14) || '').trim(),
+      sdLast: String(val(15) || '').trim(),
+      sdEmail: String(val(16) || '').trim(),
+      rvp: source.hasRvp ? String(val(17) || '').trim() : '',
+rvpEmail: source.hasRvp ? String(val(18) || '').trim() : '',
+team: source.team
     };
-  }).filter(r => r.date && !isNaN(r.date.getTime()) && r.date.getFullYear() === REPORT_YEAR);
+  }).filter(r => r.date && !isNaN(r.date.getTime()) && r.date.getFullYear() === 2026);
 }
 
 async function loadData() {
-  const results = await Promise.allSettled(SOURCES.map(s => fetchGviz(sourceUrl(s))));
-  const failed = [];
-  ALL_DATA = [];
+// allSettled keeps the dashboard usable if one sheet is unavailable
+const results = await Promise.allSettled(SOURCES.map(s => fetchGviz(sheetUrl(s.sheetId))));
+const failed = [];
+let rows = [];
 
-  results.forEach((res, i) => {
-    const src = SOURCES[i];
-    if (res.status === 'fulfilled') {
-      ALL_DATA = ALL_DATA.concat(parseGvizRows(res.value, src));
-    } else {
-      failed.push(src.name);
-    }
-  });
-
-  document.getElementById('loading-overlay').style.display = 'none';
-
-  if (failed.length === SOURCES.length) {
-    const banner = document.getElementById('error-banner');
-    banner.style.display = 'block';
-    banner.textContent = 'Unable to load data from Google Sheets. Check your connection and refresh.';
-    return;
-  }
-  if (failed.length > 0) {
-    const banner = document.getElementById('error-banner');
-    banner.style.display = 'block';
-    banner.textContent = 'Some data did not load: ' + failed.join(', ') + '. Figures below exclude those sources.';
-  }
-
-  ALL_DATA.sort((a, b) => a.date - b.date);
-  document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
-
-  populateFilters();
-  render();
+results.forEach((res, i) => {
+const source = SOURCES[i];
+if (res.status === 'fulfilled') {
+const gErr = gvizError(res.value);
+if (gErr) {
+console.error('Sheet error for ' + source.team + ': ' + gErr);
+failed.push(source.label);
+return;
 }
+try {
+rows = rows.concat(parseGvizRows(res.value, source));
+} catch (e) {
+console.error('Parse error for ' + source.team, e);
+failed.push(source.label);
+}
+} else {
+console.error('Fetch error for ' + source.team, res.reason);
+failed.push(source.label);
+}
+});
+
+document.getElementById('loading-overlay').style.display = 'none';
+
+if (failed.length === SOURCES.length) {
+const banner = document.getElementById('error-banner');
+banner.style.display = 'block';
+banner.textContent = 'Unable to load data from Google Sheets. Check your connection and refresh.';
+return;
+}
+
+if (failed.length > 0) {
+const warn = document.getElementById('warn-banner');
+warn.style.display = 'block';
+warn.textContent = 'Showing partial data. Unable to load: ' + failed.join(', ') + '. Confirm the sheet is shared as "Anyone with the link, Viewer."';
+}
+
+ALL_DATA = rows;
+ALL_DATA.sort((a, b) => a.date - b.date);
+
+document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+
+populateFilters();
+render();
+}
+
 
 // ── Filters ──
 function populateFilters() {
+const teamSel = document.getElementById('filter-team');
+teamSel.innerHTML = '<option value="all">All Teams</option>';
+SOURCES.forEach(s => {
+const o = document.createElement('option'); o.value = s.team; o.textContent = s.label; teamSel.appendChild(o);
+});
+
   const months = new Set(), rvps = new Set(), coaches = new Set();
   ALL_DATA.forEach(r => {
     if (r.date) months.add(r.date.getMonth());
@@ -572,14 +702,12 @@ function populateFilters() {
 }
 
 function getFiltered() {
-  const region = document.getElementById('filter-region').value;
   const team = document.getElementById('filter-team').value;
   const month = document.getElementById('filter-month').value;
   const rvp = document.getElementById('filter-rvp').value;
   const coach = document.getElementById('filter-coach').value;
   const type = document.getElementById('filter-type').value;
   return ALL_DATA.filter(r => {
-    if (region !== 'all' && r.region !== region) return false;
     if (team !== 'all' && r.team !== team) return false;
     if (month !== 'all' && r.date.getMonth() !== Number(month)) return false;
     if (rvp !== 'all' && r.rvp !== rvp) return false;
@@ -590,7 +718,6 @@ function getFiltered() {
 }
 
 function resetFilters() {
-  document.getElementById('filter-region').value = 'all';
   document.getElementById('filter-team').value = 'all';
   document.getElementById('filter-month').value = 'all';
   document.getElementById('filter-rvp').value = 'all';
@@ -613,7 +740,8 @@ function render() {
   renderCoachMatrix(data);
   renderBATable(data);
   renderDonuts(data);
-  renderMoMTable(data);
+renderTeamTable(data);
+renderMoMTable(data);
   renderWeekly(data);
 }
 
@@ -628,11 +756,11 @@ function renderKPIs(data) {
   const curCount = curMonthData.length;
   const prevCount = prevMonthData.length;
 
-  const usCount = data.filter(r => r.region === 'US').length;
-  const anzCount = data.filter(r => r.region === 'AU/NZ').length;
-
   document.getElementById('kpi-total').textContent = total.toLocaleString();
-  document.getElementById('kpi-total-sub').textContent = 'US ' + usCount.toLocaleString() + '  ·  AU/NZ ' + anzCount.toLocaleString();
+  const teamSel = document.getElementById('filter-team').value;
+document.getElementById('kpi-total-sub').textContent = teamSel === 'all'
+? 'across ' + SOURCES.map(s => s.label).join(', ') + ' teams'
+: teamSel + ' only';
 
   document.getElementById('kpi-month').textContent = curCount.toLocaleString();
   const changeEl = document.getElementById('kpi-month-change');
@@ -658,6 +786,15 @@ function renderKPIs(data) {
   document.getElementById('kpi-missing-sub').textContent = missing.toLocaleString() + ' of ' + total.toLocaleString() + ' requests';
   document.getElementById('kpi-info').textContent = infoPct + '%';
   document.getElementById('kpi-info-sub').textContent = moreInfo.toLocaleString() + ' of ' + total.toLocaleString() + ' requests';
+
+const cerScope = cerScopedRate(data);
+if (cerScope && cerScope.den > 0) {
+document.getElementById('kpi-cer').textContent = (cerScope.num / cerScope.den * 100).toFixed(1) + '%';
+document.getElementById('kpi-cer-sub').textContent = cerScope.num.toLocaleString() + ' CIT requests of ' + cerScope.den.toLocaleString() + ' CERs created';
+} else {
+document.getElementById('kpi-cer').textContent = '\u2014';
+document.getElementById('kpi-cer-sub').textContent = 'No CER figures for this selection';
+}
 }
 
 // ── Monthly Trend ──
@@ -718,8 +855,9 @@ function renderMonthlyTrend(data) {
 
 // ── RVP Horizontal Bar ──
 function renderRVPChart(data) {
-  const map = {};
-  data.forEach(r => { const k = r.rvp || '(Not captured)'; map[k] = (map[k] || 0) + 1; });
+const rvpData = data.filter(r => RVP_TEAMS.has(r.team));
+const map = {};
+rvpData.forEach(r => { const k = r.rvp || '(Blank)'; map[k] = (map[k] || 0) + 1; });
   const sorted = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 15);
   const labels = sorted.map(s => s[0]);
   const values = sorted.map(s => s[1]);
@@ -786,8 +924,7 @@ function renderCoachMatrix(data) {
   data.forEach(r => {
     const name = r.coachName;
     if (!name) return;
-    if (!coaches[name]) coaches[name] = { team: r.team, regions: new Set(), months: {} };
-    coaches[name].regions.add(r.region);
+    if (!coaches[name]) coaches[name] = { team: r.team, months: {} };
     const m = r.date.getMonth();
     coaches[name].months[m] = (coaches[name].months[m] || 0) + 1;
   });
@@ -800,15 +937,13 @@ function renderCoachMatrix(data) {
     return bT - aT;
   });
 
-  let html = '<table><thead><tr><th>Coach</th><th>Region</th><th>Team</th>';
+  let html = '<table><thead><tr><th>Coach</th><th>Team</th>';
   monthHeaders.forEach(m => { html += '<th style="text-align:center">' + m + '</th>'; });
   html += '<th style="text-align:center">Total</th><th>Trend</th></tr></thead><tbody>';
 
   sortedCoaches.forEach(([name, info]) => {
     html += '<tr><td style="font-weight:600">' + esc(name) + '</td>';
-    const regions = [...info.regions];
-    html += '<td>' + regions.map(rg => '<span class="badge ' + (rg === 'US' ? 'badge-us' : 'badge-anz') + '">' + esc(rg) + '</span>').join(' ') + '</td>';
-    html += '<td><span class="badge badge-' + info.team.toLowerCase() + '">' + info.team + '</span></td>';
+    html += '<td><span class="badge badge-' + teamSlug(info.team) + '">' + esc(info.team) + '</span></td>';
     let total = 0;
     const vals = [];
     for (let i = 0; i <= maxMonth; i++) {
@@ -830,7 +965,7 @@ function renderCoachMatrix(data) {
   });
 
   if (sortedCoaches.length === 0) {
-    html += '<tr><td colspan="' + (monthHeaders.length + 5) + '" style="text-align:center; color:var(--gray-400); padding:24px">No data</td></tr>';
+    html += '<tr><td colspan="' + (monthHeaders.length + 4) + '" style="text-align:center; color:var(--gray-400); padding:24px">No data</td></tr>';
   }
   html += '</tbody></table>';
   document.getElementById('coach-matrix-wrap').innerHTML = html;
@@ -857,14 +992,14 @@ function renderBATable(data) {
     const baName = [r.baFirst, r.baLast].filter(Boolean).join(' ') || '(Blank)';
     if (!baMap[baName]) {
       const sdName = [r.sdFirst, r.sdLast].filter(Boolean).join(' ');
-      baMap[baName] = { count: 0, sd: sdName, rvp: r.rvp, region: r.region };
+      baMap[baName] = { count: 0, sd: sdName, rvp: r.rvp, team: r.team };
     }
     baMap[baName].count++;
   });
 
   const sorted = Object.entries(baMap).sort((a, b) => b[1].count - a[1].count).slice(0, 10);
 
-  let html = '<table><thead><tr><th>Rank</th><th>Business Advisor</th><th style="text-align:center">Missing CITs</th><th>Region</th><th>Sales Director / Manager</th><th>RVP / Senior Manager</th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th>Rank</th><th>Business Advisor</th><th style="text-align:center">Missing CITs</th><th>Sales Director</th><th>RVP</th><th>Team</th></tr></thead><tbody>';
   sorted.forEach(([name, info], i) => {
     const rank = i + 1;
     let rankBadge = '<span style="color:var(--gray-500); font-weight:600">' + rank + '</span>';
@@ -872,9 +1007,9 @@ function renderBATable(data) {
     html += '<tr><td>' + rankBadge + '</td>';
     html += '<td style="font-weight:600">' + esc(name) + '</td>';
     html += '<td style="text-align:center; font-weight:700; color:var(--red)">' + info.count + '</td>';
-    html += '<td><span class="badge ' + (info.region === 'US' ? 'badge-us' : 'badge-anz') + '">' + esc(info.region) + '</span></td>';
     html += '<td>' + esc(info.sd) + '</td>';
-    html += '<td>' + esc(info.rvp) + '</td></tr>';
+    html += '<td>' + (info.rvp ? esc(info.rvp) : '<span style="color:var(--gray-300)">&mdash;</span>') + '</td>';
+html += '<td><span class="badge badge-' + teamSlug(info.team) + '">' + esc(info.team) + '</span></td></tr>';
   });
   if (sorted.length === 0) {
     html += '<tr><td colspan="6" style="text-align:center; color:var(--gray-400); padding:24px">No Missing CIT data for this selection</td></tr>';
@@ -889,32 +1024,29 @@ function setBaTab(m) {
 }
 
 // ── Donut Charts ──
-function donutOptions(total) {
-  return {
-    responsive: true, maintainAspectRatio: false, cutout: '65%',
-    plugins: {
-      legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 }, usePointStyle: true, pointStyle: 'circle', padding: 16 } },
-      datalabels: {
-        color: 'white', font: { weight: 'bold', size: 14, family: 'Inter' },
-        formatter: (v) => total > 0 && v > 0 ? Math.round(v / total * 100) + '%' : ''
-      }
-    }
-  };
-}
-
 function renderDonuts(data) {
   const total = data.length;
-  const csmCount = data.filter(r => r.team === 'CSM').length;
-  const pcsmCount = data.filter(r => r.team === 'PCSM').length;
+  const teamLabels = SOURCES.map(s => s.label);
+const teamData = SOURCES.map(s => data.filter(r => r.team === s.team).length);
+const teamBg = SOURCES.map(s => s.color);
 
   if (CHARTS.teamDonut) CHARTS.teamDonut.destroy();
   CHARTS.teamDonut = new Chart(document.getElementById('chart-team-donut'), {
     type: 'doughnut',
     data: {
-      labels: ['CSM', 'PCSM'],
-      datasets: [{ data: [csmCount, pcsmCount], backgroundColor: [COLORS.blue, COLORS.orange], borderWidth: 0 }]
+      labels: teamLabels,
+datasets: [{ data: teamData, backgroundColor: teamBg, borderWidth: 0 }]
     },
-    options: donutOptions(total),
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 }, usePointStyle: true, pointStyle: 'circle', padding: 16 } },
+        datalabels: {
+          color: 'white', font: { weight: 'bold', size: 14, family: 'Inter' },
+          formatter: (v) => (total > 0 && v > 0) ? Math.round(v / total * 100) + '%' : ''
+        }
+      }
+    },
     plugins: [ChartDataLabels]
   });
 
@@ -933,36 +1065,66 @@ function renderDonuts(data) {
       labels: typeLabels,
       datasets: [{ data: typeData, backgroundColor: typeBg, borderWidth: 0 }]
     },
-    options: donutOptions(total),
-    plugins: [ChartDataLabels]
-  });
-
-  const usCount = data.filter(r => r.region === 'US').length;
-  const anzCount = data.filter(r => r.region === 'AU/NZ').length;
-
-  if (CHARTS.regionDonut) CHARTS.regionDonut.destroy();
-  CHARTS.regionDonut = new Chart(document.getElementById('chart-region-donut'), {
-    type: 'doughnut',
-    data: {
-      labels: ['US', 'AU/NZ'],
-      datasets: [{ data: [usCount, anzCount], backgroundColor: [COLORS.slate, COLORS.cyan], borderWidth: 0 }]
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 }, usePointStyle: true, pointStyle: 'circle', padding: 16 } },
+        datalabels: {
+          color: 'white', font: { weight: 'bold', size: 14, family: 'Inter' },
+          formatter: (v) => (total > 0 && v > 0) ? Math.round(v / total * 100) + '%' : ''
+        }
+      }
     },
-    options: donutOptions(total),
     plugins: [ChartDataLabels]
   });
 }
 
 // ── MoM Performance Table ──
+// Team Summary Table
+function renderTeamTable(data) {
+let html = '<table><thead><tr><th>Team</th><th style="text-align:center">Total</th><th style="text-align:center">Missing CIT</th><th style="text-align:center">More Info</th><th style="text-align:center">Missing CIT %</th><th style="text-align:center">CIT Rate vs CERs</th><th style="text-align:center">Share of Volume</th><th style="text-align:center">Coaches</th></tr></thead><tbody>';
+const grandTotal = data.length;
+SOURCES.forEach(s => {
+const rows = data.filter(r => r.team === s.team);
+const t = rows.length;
+const missing = rows.filter(r => r.type === 'Missing CIT').length;
+const info = rows.filter(r => r.type === 'More Information Needed for CIT').length;
+const missPct = t > 0 ? (missing / t * 100).toFixed(1) : '0.0';
+const share = grandTotal > 0 ? (t / grandTotal * 100).toFixed(1) : '0.0';
+const coachCount = new Set(rows.map(r => r.coachName).filter(Boolean)).size;
+let missPctColor = 'var(--gray-800)';
+if (t > 0 && Number(missPct) >= 70) missPctColor = 'var(--red)';
+else if (t > 0 && Number(missPct) >= 50) missPctColor = COLORS.amber;
+html += '<tr>';
+html += '<td><span class="badge badge-' + teamSlug(s.team) + '">' + esc(s.label) + '</span></td>';
+html += '<td style="text-align:center; font-weight:600">' + t + '</td>';
+html += '<td style="text-align:center">' + missing + '</td>';
+html += '<td style="text-align:center">' + info + '</td>';
+html += '<td style="text-align:center; font-weight:700; color:' + missPctColor + '">' + (t > 0 ? missPct + '%' : '&mdash;') + '</td>';
+// Restrict both sides of the rate to months that have a CER figure on file,
+// so a YTD request count is never divided by a partial-year denominator.
+const cerMonths = selectedMonths().filter(m => (CER_COUNTS[s.team] || {})[m] != null);
+const cerDen = cerTotal([s.team], cerMonths);
+const cerNum = rows.filter(r => cerMonths.indexOf(r.date.getMonth()) !== -1).length;
+html += '<td style="text-align:center">' + cerRateCell(cerNum, cerDen) + '</td>';
+html += '<td style="text-align:center">' + share + '%</td>';
+html += '<td style="text-align:center">' + coachCount + '</td>';
+html += '</tr>';
+});
+html += '</tbody></table>';
+document.getElementById('team-table-wrap').innerHTML = html;
+const asOf = document.getElementById('cer-asof');
+if (asOf) asOf.textContent = 'CER counts as of ' + CER_UPDATED;
+}
+
 function renderMoMTable(data) {
   const maxMonth = data.length > 0 ? Math.max(...data.map(r => r.date.getMonth())) : 0;
-  let html = '<table><thead><tr><th>Month</th><th style="text-align:center">Total</th><th style="text-align:center">US</th><th style="text-align:center">AU/NZ</th><th style="text-align:center">Missing CIT</th><th style="text-align:center">More Info</th><th style="text-align:center">Missing CIT %</th><th style="text-align:center">MoM Change</th><th style="text-align:center">Trend</th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th>Month</th><th style="text-align:center">Total</th><th style="text-align:center">Missing CIT</th><th style="text-align:center">More Info</th><th style="text-align:center">Missing CIT %</th><th style="text-align:center">CIT Rate vs CERs</th><th style="text-align:center">MoM Change</th><th style="text-align:center">Trend</th></tr></thead><tbody>';
 
   let prevTotal = null;
   for (let i = 0; i <= maxMonth; i++) {
     const monthData = data.filter(r => r.date.getMonth() === i);
     const t = monthData.length;
-    const us = monthData.filter(r => r.region === 'US').length;
-    const anz = monthData.filter(r => r.region === 'AU/NZ').length;
     const missing = monthData.filter(r => r.type === 'Missing CIT').length;
     const info = monthData.filter(r => r.type === 'More Information Needed for CIT').length;
     const missPct = t > 0 ? (missing / t * 100).toFixed(1) : '0.0';
@@ -989,11 +1151,10 @@ function renderMoMTable(data) {
     html += '<tr>';
     html += '<td style="font-weight:600">' + MONTH_FULL[i] + '</td>';
     html += '<td style="text-align:center; font-weight:600">' + t + '</td>';
-    html += '<td style="text-align:center">' + us + '</td>';
-    html += '<td style="text-align:center">' + anz + '</td>';
     html += '<td style="text-align:center">' + missing + '</td>';
     html += '<td style="text-align:center">' + info + '</td>';
     html += '<td style="text-align:center; font-weight:700; color:' + missPctColor + '">' + missPct + '%</td>';
+html += '<td style="text-align:center">' + cerRateCell(t, cerTotal(selectedTeams(), [i])) + '</td>';
     html += '<td style="text-align:center">' + changeHtml + '</td>';
     html += '<td style="text-align:center">' + trendHtml + '</td>';
     html += '</tr>';
@@ -1011,7 +1172,7 @@ function renderWeekly(data) {
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     const monday = new Date(d.getFullYear(), d.getMonth(), diff);
-    const key = monday.getFullYear() + '-' + String(monday.getMonth() + 1).padStart(2, '0') + '-' + String(monday.getDate()).padStart(2, '0');
+    const key = monday.toISOString().slice(0, 10);
     weekMap[key] = (weekMap[key] || 0) + 1;
   });
   const sorted = Object.entries(weekMap).sort((a, b) => a[0].localeCompare(b[0]));
