@@ -442,6 +442,21 @@ const SOURCES = [
 
 const RVP_TEAMS = new Set(SOURCES.filter(s => s.hasRvp).map(s => s.team));
 
+// Retired "ANZ - Request for CIT Form" (Jotform 261657481010856), disabled
+// Sep 9 2026. Its 48 submissions were exported to the frozen "ANZ Legacy" tab
+// of the AU/NZ spreadsheet, remapped to the CSM column layout. One test
+// submission from Jun 15 was dropped, leaving 47 rows, all August 2026.
+//
+// These rows join the AU/NZ team for volume, coach and Business Advisor views.
+// They are excluded from CIT Rate vs CERs: the AU/NZ CER denominators are the
+// figures already sent to leadership and do not cover this book, so including
+// them would push AU/NZ above 100% and restate a reported number.
+const LEGACY_FEEDS = [
+{ team: 'AU/NZ', label: 'AU/NZ legacy', sheetId: '1E1KxCd9inB7Me9j_94RCe2i-kriS_LHzHcVz8Z9AxlI', tab: 'ANZ Legacy', hasRvp: false, legacy: true }
+];
+
+const LEGACY_NOTE = '47 retired AU/NZ form submissions counted in volume only';
+
 // CSS-safe class suffix for team badges (AU/NZ becomes "aunz")
 function teamSlug(team) {
 return String(team || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -527,7 +542,7 @@ const byMonth = CER_COUNTS[t] || {};
 months.forEach(m => {
 if (byMonth[m] == null) return;
 den += byMonth[m];
-num += data.filter(r => r.team === t && r.date.getMonth() === m).length;
+num += data.filter(r => r.team === t && r.date.getMonth() === m && !r.legacy).length;
 have = true;
 });
 });
@@ -557,8 +572,10 @@ function fetchGviz(url) {
 // Year filtering happens client side in parseGvizRows. A server-side
 // "WHERE YEAR(A)=2026" fails on a sheet with no rows yet, because Google
 // cannot type an empty column as a date.
-function sheetUrl(sheetId) {
-return 'https://docs.google.com/spreadsheets/d/' + sheetId + '/gviz/tq?tq=' + encodeURIComponent('SELECT *');
+function sheetUrl(sheetId, tab) {
+let url = 'https://docs.google.com/spreadsheets/d/' + sheetId + '/gviz/tq?tq=' + encodeURIComponent('SELECT *');
+if (tab) url += '&sheet=' + encodeURIComponent(tab);
+return url;
 }
 
 // gviz returns HTTP 200 with a status of "error" for bad queries or sheets
@@ -613,19 +630,21 @@ function parseGvizRows(resp, source) {
       sdEmail: String(val(16) || '').trim(),
       rvp: source.hasRvp ? String(val(17) || '').trim() : '',
 rvpEmail: source.hasRvp ? String(val(18) || '').trim() : '',
-team: source.team
+team: source.team,
+legacy: !!source.legacy
     };
   }).filter(r => r.date && !isNaN(r.date.getTime()) && r.date.getFullYear() === 2026);
 }
 
 async function loadData() {
 // allSettled keeps the dashboard usable if one sheet is unavailable
-const results = await Promise.allSettled(SOURCES.map(s => fetchGviz(sheetUrl(s.sheetId))));
+const FEEDS = SOURCES.concat(LEGACY_FEEDS);
+const results = await Promise.allSettled(FEEDS.map(s => fetchGviz(sheetUrl(s.sheetId, s.tab))));
 const failed = [];
 let rows = [];
 
 results.forEach((res, i) => {
-const source = SOURCES[i];
+const source = FEEDS[i];
 if (res.status === 'fulfilled') {
 const gErr = gvizError(res.value);
 if (gErr) {
@@ -647,7 +666,7 @@ failed.push(source.label);
 
 document.getElementById('loading-overlay').style.display = 'none';
 
-if (failed.length === SOURCES.length) {
+if (failed.length === FEEDS.length) {
 const banner = document.getElementById('error-banner');
 banner.style.display = 'block';
 banner.textContent = 'Unable to load data from Google Sheets. Check your connection and refresh.';
@@ -1105,7 +1124,7 @@ html += '<td style="text-align:center; font-weight:700; color:' + missPctColor +
 // so a YTD request count is never divided by a partial-year denominator.
 const cerMonths = selectedMonths().filter(m => (CER_COUNTS[s.team] || {})[m] != null);
 const cerDen = cerTotal([s.team], cerMonths);
-const cerNum = rows.filter(r => cerMonths.indexOf(r.date.getMonth()) !== -1).length;
+const cerNum = rows.filter(r => cerMonths.indexOf(r.date.getMonth()) !== -1 && !r.legacy).length;
 html += '<td style="text-align:center">' + cerRateCell(cerNum, cerDen) + '</td>';
 html += '<td style="text-align:center">' + share + '%</td>';
 html += '<td style="text-align:center">' + coachCount + '</td>';
@@ -1114,7 +1133,7 @@ html += '</tr>';
 html += '</tbody></table>';
 document.getElementById('team-table-wrap').innerHTML = html;
 const asOf = document.getElementById('cer-asof');
-if (asOf) asOf.textContent = 'CER counts as of ' + CER_UPDATED;
+if (asOf) asOf.textContent = 'CER counts as of ' + CER_UPDATED + ' \u00b7 ' + LEGACY_NOTE;
 }
 
 function renderMoMTable(data) {
@@ -1154,7 +1173,8 @@ function renderMoMTable(data) {
     html += '<td style="text-align:center">' + missing + '</td>';
     html += '<td style="text-align:center">' + info + '</td>';
     html += '<td style="text-align:center; font-weight:700; color:' + missPctColor + '">' + missPct + '%</td>';
-html += '<td style="text-align:center">' + cerRateCell(t, cerTotal(selectedTeams(), [i])) + '</td>';
+const cerNum = monthData.filter(r => !r.legacy).length;
+html += '<td style="text-align:center">' + cerRateCell(cerNum, cerTotal(selectedTeams(), [i])) + '</td>';
     html += '<td style="text-align:center">' + changeHtml + '</td>';
     html += '<td style="text-align:center">' + trendHtml + '</td>';
     html += '</tr>';
