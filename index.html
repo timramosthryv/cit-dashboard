@@ -462,7 +462,7 @@ function teamSlug(team) {
 return String(team || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-const CER_UPDATED = 'Sep 3, 2026';
+const CER_UPDATED = 'Sep 10, 2026';
 
 // First month index sourced live from Salesforce rather than from a sent readout.
 // 8 = September 2026. Months before this are frozen at the figures already
@@ -482,16 +482,30 @@ const CER_LIVE_FROM = 8;
 // fixed so the dashboard ties to what leadership already has. Blanks are
 // months where a readout stated no denominator, and those show a dash.
 //
-// September onward is pulled from Onboarding_Form__c by month of CreatedDate,
-// excluding the three Cancelled statuses, with no Thryv Package filter, and
-// with Taylor and Stephen routed to AU/NZ. Note this basis is narrower than
-// the reported months, which included Taylor's book inside CSM.
+// September onward is pulled from Onboarding_Form__c (Client Engagement
+// Roadmap) by month of CreatedDate, excluding the three Cancelled statuses
+// ("Cancelled", "Cancelled – No Appointment Needed", "Cancelled – Duplicate")
+// and with no Thryv Package filter. Team comes from the coach on the record,
+// TSS_Manager_Name__c, which stores names without spaces, e.g. "ShannonComas".
+// Coach rosters, confirmed by Tim Ramos on Sep 10 2026 and matching the CSM
+// and PCSM CERs Assigned All 2026 reports:
+//
+//   CSM   — Elizabeth White, Mia O'Dirling, Kendra Leary, Trisha Stalnaker,
+//           Chase Boyd, Carrie Reece, Jacob Baldwin
+//   PCSM  — Shannon Comas, Julia Cowden, Dexter Tardy, Alexandra Esfeld
+//   AU/NZ — Aaron Taylor, Stephen Van Niekerk
+//
+// Records with no coach are excluded. In September those were 24 owned by the
+// Thryv Support queue with a null coach, plus 3 sitting under Kasey Steele or
+// Newell Godwin rather than a coach: 347 non-cancelled records, 319 attributed.
+// Note this basis is narrower than the reported months, which included
+// Taylor's book inside CSM.
 //
 // Keyed by team, then month index (0 = January).
 const CER_COUNTS = {
-'CSM':   { 0: 465, 1: 560, 2: 617, 3: 623, 4: 522, 5: 464, 6: 663, 7: 687, 8: 61 },
-'PCSM':  { 1: 273, 2: 234, 4: 173, 5: 129, 6: 189, 7: 75, 8: 20 },
-'AU/NZ': { 7: 36, 8: 40 }
+'CSM':   { 0: 465, 1: 560, 2: 617, 3: 623, 4: 522, 5: 464, 6: 663, 7: 687, 8: 176 },
+'PCSM':  { 1: 273, 2: 234, 4: 173, 5: 129, 6: 189, 7: 75, 8: 49 },
+'AU/NZ': { 7: 36, 8: 94 }
 };
 
 function selectedTeams() {
