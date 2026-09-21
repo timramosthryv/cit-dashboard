@@ -462,7 +462,7 @@ function teamSlug(team) {
 return String(team || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-const CER_UPDATED = 'Sep 16, 2026';
+const CER_UPDATED = 'Sep 21, 2026';
 
 // First month index sourced live from Salesforce rather than from a sent readout.
 // 8 = September 2026. Months before this are frozen at the figures already
@@ -503,9 +503,9 @@ const CER_LIVE_FROM = 8;
 //
 // Keyed by team, then month index (0 = January).
 const CER_COUNTS = {
-'CSM':   { 0: 465, 1: 560, 2: 617, 3: 623, 4: 522, 5: 464, 6: 663, 7: 687, 8: 280 },
-'PCSM':  { 1: 273, 2: 234, 4: 173, 5: 129, 6: 189, 7: 75, 8: 82 },
-'AU/NZ': { 7: 36, 8: 154 }
+'CSM':   { 0: 465, 1: 560, 2: 617, 3: 623, 4: 522, 5: 464, 6: 663, 7: 687, 8: 364 },
+'PCSM':  { 1: 273, 2: 234, 4: 173, 5: 129, 6: 189, 7: 75, 8: 99 },
+'AU/NZ': { 7: 36, 8: 196 }
 };
 
 function selectedTeams() {
